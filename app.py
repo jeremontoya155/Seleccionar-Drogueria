@@ -2,25 +2,32 @@ import pandas as pd
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
-def cargar_archivos():
-    archivos = filedialog.askopenfilenames(title="Seleccione los archivos CSV")
-    return archivos
+archivos_csv = []
+archivo_txt = ""
 
-def cargar_txt():
+def cargar_archivos_csv():
+    global archivos_csv
+    archivos_csv = filedialog.askopenfilenames(title="Seleccione los archivos CSV")
+    
+def cargar_archivo_txt():
+    global archivo_txt
     archivo_txt = filedialog.askopenfilename(title="Seleccione el archivo TXT")
-    return archivo_txt
 
 def procesar_datos():
     try:
-        archivos = cargar_archivos()
-        ruta_archivo_txt = cargar_txt()
+        if not archivos_csv:
+            messagebox.showerror("Error", "Por favor, primero cargue los archivos CSV.")
+            return
+        elif not archivo_txt:
+            messagebox.showerror("Error", "Por favor, primero cargue el archivo TXT.")
+            return
         
         # Definir las columnas que te interesan (nombre y precio)
         columnas = [1, 5, 6, 9]  # Las columnas están indexadas desde 0
 
         # Crear una lista de DataFrames
         dataframes = []
-        for archivo, nombre_df in zip(archivos, ['Barracas', 'Cofarsur', 'Del Sud']):
+        for archivo, nombre_df in zip(archivos_csv, ['Barracas', 'Cofarsur', 'Del Sud']):
             df = pd.read_csv(archivo, sep=';', usecols=columnas, header=None, encoding='ISO-8859-1')
             df.columns = ["Codigo", 'Nombre', "Gramaje", 'Precio']
             df['Archivo'] = nombre_df  # Agregar una columna con el nombre del archivo
@@ -51,7 +58,7 @@ def procesar_datos():
         mejor_opcion = mejor_opcion.merge(nombres_df, on='Codigo')
 
         # Leer el archivo de texto en un DataFrame sin utilizar la primera fila como encabezados
-        BaseTxt = pd.read_csv(ruta_archivo_txt, sep='\t', header=None)
+        BaseTxt = pd.read_csv(archivo_txt, sep='\t', header=None)
 
         # Asignar nombres a las columnas
         BaseTxt.columns = ['Codigo', 'Producto', 'Condicion', 'CantidadDeseada', 'Cantidad']
@@ -89,8 +96,14 @@ root.title("Procesador de datos")
 root.geometry("400x200")
 
 # Botones
-btn_cargar_archivos = tk.Button(root, text="Cargar archivos CSV", command=procesar_datos)
-btn_cargar_archivos.pack(pady=10)
+btn_cargar_csv = tk.Button(root, text="Cargar archivos CSV", command=cargar_archivos_csv)
+btn_cargar_csv.pack(pady=5)
+
+btn_cargar_txt = tk.Button(root, text="Cargar archivo TXT", command=cargar_archivo_txt)
+btn_cargar_txt.pack(pady=5)
+
+btn_procesar = tk.Button(root, text="Procesar datos", command=procesar_datos)
+btn_procesar.pack(pady=5)
 
 # Ejecutar la aplicación
 root.mainloop()
