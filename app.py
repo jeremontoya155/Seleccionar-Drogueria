@@ -4,12 +4,13 @@ from tkinter import filedialog, messagebox
 
 archivos_csv = {}
 archivo_txt = ""
+descuentos = {"Barracas": 0, "Cofarsur": 0, "Del Sud": 0}
 
 def cargar_archivo_csv(nombre_df):
     global archivos_csv
     archivo_csv = filedialog.askopenfilename(title=f"Seleccione el archivo CSV para {nombre_df}")
     archivos_csv[nombre_df] = archivo_csv
-    
+
 def cargar_archivo_txt():
     global archivo_txt
     archivo_txt = filedialog.askopenfilename(title="Seleccione el archivo TXT")
@@ -23,6 +24,10 @@ def procesar_datos():
             messagebox.showerror("Error", "Por favor, primero cargue el archivo TXT.")
             return
         
+        # Leer los valores de los descuentos ingresados
+        for key, value in descuentos.items():
+            descuentos[key] = int(entry_descuentos[key].get())
+
         # Definir las columnas que te interesan (nombre y precio)
         columnas = [1, 5, 6, 9]  # Las columnas están indexadas desde 0
 
@@ -32,6 +37,8 @@ def procesar_datos():
             df = pd.read_csv(archivo_csv, sep=';', usecols=columnas, header=None, encoding='ISO-8859-1')
             df.columns = ["Codigo", 'Nombre', "Gramaje", 'Precio']
             df['Archivo'] = nombre_df  # Agregar una columna con el nombre del archivo
+            # Aplicar descuento
+            df['Precio'] = df['Precio'] * (1 - descuentos[nombre_df] / 100)
             dataframes.append(df)
 
         # Concatenar el nombre y el gramaje
@@ -94,9 +101,19 @@ def procesar_datos():
 # Crear la interfaz gráfica
 root = tk.Tk()
 root.title("Procesador de datos")
-root.geometry("400x200")
+root.geometry("400x300")
 
-# Botones
+# Entry para los descuentos
+entry_descuentos = {}
+for nombre_df in descuentos.keys():
+    frame = tk.Frame(root)
+    frame.pack(pady=5)
+    label = tk.Label(frame, text=f"Descuento para {nombre_df}:")
+    label.pack(side="left")
+    entry_descuentos[nombre_df] = tk.Entry(frame)
+    entry_descuentos[nombre_df].pack(side="left")
+
+# Botones para cargar archivos CSV
 btn_cargar_barracas = tk.Button(root, text="Cargar archivo CSV de Barracas", command=lambda: cargar_archivo_csv("Barracas"))
 btn_cargar_barracas.pack(pady=5)
 
@@ -106,9 +123,11 @@ btn_cargar_cofarsur.pack(pady=5)
 btn_cargar_delsud = tk.Button(root, text="Cargar archivo CSV de Del Sud", command=lambda: cargar_archivo_csv("Del Sud"))
 btn_cargar_delsud.pack(pady=5)
 
+# Botón para cargar archivo TXT
 btn_cargar_txt = tk.Button(root, text="Cargar archivo TXT", command=cargar_archivo_txt)
 btn_cargar_txt.pack(pady=5)
 
+# Botón para procesar datos
 btn_procesar = tk.Button(root, text="Procesar datos", command=procesar_datos)
 btn_procesar.pack(pady=5)
 
