@@ -2,12 +2,13 @@ import pandas as pd
 import tkinter as tk
 from tkinter import filedialog, messagebox
 
-archivos_csv = []
+archivos_csv = {}
 archivo_txt = ""
 
-def cargar_archivos_csv():
+def cargar_archivo_csv(nombre_df):
     global archivos_csv
-    archivos_csv = filedialog.askopenfilenames(title="Seleccione los archivos CSV")
+    archivo_csv = filedialog.askopenfilename(title=f"Seleccione el archivo CSV para {nombre_df}")
+    archivos_csv[nombre_df] = archivo_csv
     
 def cargar_archivo_txt():
     global archivo_txt
@@ -27,8 +28,8 @@ def procesar_datos():
 
         # Crear una lista de DataFrames
         dataframes = []
-        for archivo, nombre_df in zip(archivos_csv, ['Barracas', 'Cofarsur', 'Del Sud']):
-            df = pd.read_csv(archivo, sep=';', usecols=columnas, header=None, encoding='ISO-8859-1')
+        for nombre_df, archivo_csv in archivos_csv.items():
+            df = pd.read_csv(archivo_csv, sep=';', usecols=columnas, header=None, encoding='ISO-8859-1')
             df.columns = ["Codigo", 'Nombre', "Gramaje", 'Precio']
             df['Archivo'] = nombre_df  # Agregar una columna con el nombre del archivo
             dataframes.append(df)
@@ -96,8 +97,14 @@ root.title("Procesador de datos")
 root.geometry("400x200")
 
 # Botones
-btn_cargar_csv = tk.Button(root, text="Cargar archivos CSV", command=cargar_archivos_csv)
-btn_cargar_csv.pack(pady=5)
+btn_cargar_barracas = tk.Button(root, text="Cargar archivo CSV de Barracas", command=lambda: cargar_archivo_csv("Barracas"))
+btn_cargar_barracas.pack(pady=5)
+
+btn_cargar_cofarsur = tk.Button(root, text="Cargar archivo CSV de Cofarsur", command=lambda: cargar_archivo_csv("Cofarsur"))
+btn_cargar_cofarsur.pack(pady=5)
+
+btn_cargar_delsud = tk.Button(root, text="Cargar archivo CSV de Del Sud", command=lambda: cargar_archivo_csv("Del Sud"))
+btn_cargar_delsud.pack(pady=5)
 
 btn_cargar_txt = tk.Button(root, text="Cargar archivo TXT", command=cargar_archivo_txt)
 btn_cargar_txt.pack(pady=5)
